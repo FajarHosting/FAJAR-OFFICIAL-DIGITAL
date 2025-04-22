@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>EDIT FOTO DAN DOWNLOAD VIDIO ALL SOSMED BY FAJAR</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <audio autoplay loop id="bgMusic">
+    <source src="musik.mp3" type="audio/mpeg">
+    Browser Anda tidak mendukung audio.
+  </audio>
+
+  <div class="container">
+    <h1>HD-in Foto & Download Video</h1>
+
+    <section>
+      <h2>HD-in Foto</h2>
+      <input type="file" id="photoInput" accept="image/*">
+      <button onclick="enhancePhoto()">Proses HD</button>
+      <div id="photoPreview"></div>
+    </section>
+
+    <section>
+      <h2>Download Video</h2>
+      <input type="text" id="videoUrl" placeholder="Masukkan URL video">
+      <button onclick="downloadVideo()">Download</button>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
