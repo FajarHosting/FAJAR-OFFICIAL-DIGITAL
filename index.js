@@ -17,18 +17,19 @@ app.get('/', (req, res) => {
 app.post('/hd', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).send('No image uploaded');
-    
-    // Tentukan ukuran yang lebih besar (misalnya HD atau 4K)
-    const width = 1920;  // Resolusi lebar HD (1920px)
-    const height = null; // Tinggi otomatis berdasarkan rasio aspek asli
 
-    // Resize gambar menjadi HD (1920px) dan menajamkan dengan lebih kuat
+    // Tentukan ukuran resolusi lebih tinggi (misalnya HD atau 4K)
+    const width = 1920;  // Resolusi lebar HD (1920px), ganti menjadi 3840 untuk 4K
+    const height = null; // Tinggi otomatis agar rasio gambar tetap terjaga
+
+    // Resize gambar menjadi lebih besar (misalnya HD atau 4K)
     const buffer = await sharp(req.file.buffer)
-      .resize(width, height, { withoutEnlargement: false }) // Ukuran gambar dapat diperbesar jika gambar lebih kecil dari target
-      .sharpen(2) // Menajamkan gambar dengan level yang lebih tinggi
+      .resize(width, height, { withoutEnlargement: false }) // Gambar diperbesar meskipun ukuran aslinya lebih kecil
+      .sharpen(3)  // Menggunakan level sharpen yang lebih tinggi untuk ketajaman
+      .withMetadata()  // Menyertakan metadata gambar
       .toBuffer();
 
-    // Kirim hasil gambar dalam format JPEG
+    // Mengirim gambar dalam format JPEG
     res.set('Content-Type', 'image/jpeg');
     res.send(buffer);
   } catch (err) {
