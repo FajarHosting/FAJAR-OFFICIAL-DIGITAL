@@ -1,34 +1,233 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>EDIT FOTO DAN DOWNLOAD VIDIO ALL SOSMED BY FAJAR</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image HD Converter</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --dark: #1e1e24;
+      --light: #f8f9fa;
+      --success: #4cc9f0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      color: var(--dark);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+    .upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 3rem 2rem;
+      margin-bottom: 2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(67, 97, 238, 0.05);
+    }
+    #file-input {
+      display: none;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+    .btn:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
+    }
+    .result-container {
+      margin-top: 2rem;
+      display: none;
+    }
+    .image-comparison {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+    .image-box {
+      flex: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .image-box img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .image-label {
+      background: var(--primary);
+      color: white;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .loading {
+      display: none;
+      margin: 1rem 0;
+    }
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <audio autoplay loop id="bgMusic">
-    <source src="musik.mp3" type="audio/mpeg">
-    Browser Anda tidak mendukung audio.
-  </audio>
-
   <div class="container">
-    <h1>EDIT FOTO DAN DOWNLOAD VIDIO ALL SOSMED BY FAJAR</h1>
-
-    <section>
-      <h2>HD-in Foto</h2>
-      <input type="file" id="photoInput" accept="image/*">
-      <button onclick="enhancePhoto()">Proses HD</button>
-      <div id="photoPreview"></div>
-    </section>
-
-    <section>
-      <h2>Download Video</h2>
-      <input type="text" id="videoUrl" placeholder="Masukkan URL video">
-      <button onclick="downloadVideo()">Download</button>
-    </section>
+    <h1>Image HD Converter</h1>
+    <p>Unggah gambar untuk meningkatkan kualitas menjadi HD</p>
+    
+    <div class="upload-area" id="upload-area">
+      <p>Klik untuk memilih gambar atau tarik ke sini</p>
+      <input type="file" id="file-input" accept="image/*">
+      <button class="btn" id="upload-btn">Pilih Gambar</button>
+    </div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Memproses gambar...</p>
+    </div>
+    
+    <div class="result-container" id="result-container">
+      <h2>Hasil Konversi</h2>
+      <div class="image-comparison">
+        <div class="image-box">
+          <div class="image-label">Original</div>
+          <img id="original-img" src="" alt="Original">
+        </div>
+        <div class="image-box">
+          <div class="image-label">HD Result</div>
+          <img id="result-img" src="" alt="HD Result">
+        </div>
+      </div>
+      <button class="btn" id="download-btn">Download HD Image</button>
+    </div>
   </div>
 
-  <script src="config.js"></script>
-  <script src="script.js"></script>
+  <script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const uploadBtn = document.getElementById('upload-btn');
+    const loading = document.getElementById('loading');
+    const resultContainer = document.getElementById('result-container');
+    const originalImg = document.getElementById('original-img');
+    const resultImg = document.getElementById('result-img');
+    const downloadBtn = document.getElementById('download-btn');
+    
+    let hdImageUrl = null;
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'var(--primary)';
+      uploadArea.style.backgroundColor = 'rgba(67, 97, 238, 0.05)';
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.borderColor = '#ccc';
+      uploadArea.style.backgroundColor = 'transparent';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#ccc';
+      uploadArea.style.backgroundColor = 'transparent';
+      
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileUpload();
+      }
+    });
+    
+    fileInput.addEventListener('change', handleFileUpload);
+    
+    function handleFileUpload() {
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        originalImg.src = e.target.result;
+        
+        loading.style.display = 'block';
+        resultContainer.style.display = 'none';
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        fetch('/hd', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.blob())
+        .then(blob => {
+          hdImageUrl = URL.createObjectURL(blob);
+          resultImg.src = hdImageUrl;
+          loading.style.display = 'none';
+          resultContainer.style.display = 'block';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          loading.style.display = 'none';
+          alert('Gagal memproses gambar');
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    downloadBtn.addEventListener('click', () => {
+      if (!hdImageUrl) return;
+      
+      const a = document.createElement('a');
+      a.href = hdImageUrl;
+      a.download = 'hd-image.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  </script>
 </body>
 </html>
