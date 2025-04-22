@@ -21,15 +21,26 @@ app.post('/hd', upload.single('image'), async (req, res) => {
     const image = sharp(req.file.buffer);
     const metadata = await image.metadata();
 
-    // Perbesar maksimal 3x lipat agar tidak pecah
-    const maxScale = 3;
-    const newWidth = Math.min(metadata.width * maxScale, 3840); // Batas atas: 4K
-    const newHeight = Math.round((newWidth / metadata.width) * metadata.height);
+    const newWidth = metadata.width * 3;
+    const newHeight = metadata.height * 3;
 
     const buffer = await image
-      .resize(newWidth, newHeight)
-      .sharpen(2) // Penajaman sedang
-      .jpeg({ quality: 95 }) // Kualitas tinggi
+      .resize({
+        width: newWidth,
+        height: newHeight,
+        fit: 'inside',
+        kernel: sharp.kernel.lanczos3, // scaling terbaik
+      })
+      .sharpen({
+        sigma: 1,
+        m1: 2,
+        m2: 1,
+        x1: 2,
+        x2: 2,
+        y2: 2,
+      })
+      .withMetadata()
+      .jpeg({ quality: 100 })
       .toBuffer();
 
     res.set('Content-Type', 'image/jpeg');
